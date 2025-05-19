@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "226817382589",
+    "project_id": "curalink7",
+    "storage_bucket": "curalink7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:226817382589:android:a53c2843b89f4cf02cbfd4",
+        "android_client_info": {
+          "package_name": "com.james.haelia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByLoQmOyVAdt61K8DWFNvoTHpKCZjNZ5o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
