@@ -14,6 +14,6 @@ const val ROUT_INSURANCE = "car_insurance"
 const val ROUT_PROFILE = "profilescreen"
 const val ROUT_VALUATION = "car_valuation"
 const val ROUT_OFFER = "precise_offer"
-
+const val ROUT_WELCOME="welcome screen"
 const val ROUT_REPAIR = "car_repair"
 const val ROUT_CONTACT="contact"

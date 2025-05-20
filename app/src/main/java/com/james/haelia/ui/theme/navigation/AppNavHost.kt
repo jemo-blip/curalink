@@ -56,7 +56,9 @@ fun AppNavHost(
         composable(ROUT_REPAIR) {
             MaintenanceRepairScreen(navController)
         }
-
+        composable (ROUT_WELCOME){
+            WelcomeScreen(navController)
+        }
         composable(ROUT_SERVICE) {
             ServiceScreen(navController)
         }

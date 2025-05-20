@@ -10,6 +10,7 @@ import com.james.haelia.model.User
 import com.james.haelia.ui.theme.navigation.ROUT_HOME
 import com.james.haelia.ui.theme.navigation.ROUT_LOGIN
 import com.james.haelia.ui.theme.navigation.ROUT_SIGNUP
+import com.james.haelia.ui.theme.navigation.ROUT_SERVICE
 
 
 class AuthViewModel(var navController: NavController, var context: Context) {
@@ -37,7 +38,7 @@ class AuthViewModel(var navController: NavController, var context: Context) {
                         if (it.isSuccessful) {
                             Toast.makeText(context, "Registered Successfully", Toast.LENGTH_LONG)
                                 .show()
-
+                            navController.navigate(ROUT_SERVICE)
                         } else {
                             Toast.makeText(context, "${it.exception!!.message}", Toast.LENGTH_LONG)
                                 .show()
@@ -54,26 +55,35 @@ class AuthViewModel(var navController: NavController, var context: Context) {
     }
 
     fun login(email: String, password: String) {
-
         if (email.isBlank() || password.isBlank()) {
-            Toast.makeText(context, "Please email and password cannot be blank", Toast.LENGTH_LONG)
-                .show()
-        } else {
-            mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
-                if (it.isSuccessful) {
-                    Toast.makeText(this.context, "Success", Toast.LENGTH_SHORT).show()
-                    navController.navigate(ROUT_HOME)
-                } else {
-                    Toast.makeText(this.context, "Error", Toast.LENGTH_SHORT).show()
-                }
-            }
+            Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_LONG).show()
+            return
+        }
 
+        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
+                navController.navigate(ROUT_SERVICE) {
+                    popUpTo(ROUT_LOGIN) { inclusive = true }
+                }
+            } else {
+                val errorMessage = when {
+                    task.exception?.message?.contains("no user record") == true -> 
+                        "No account found with this email. Please sign up first."
+                    task.exception?.message?.contains("password is invalid") == true -> 
+                        "Incorrect password. Please try again."
+                    else -> "Login failed: ${task.exception?.message}"
+                }
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+            }
         }
     }
 
     fun logout() {
         mAuth.signOut()
-        navController.navigate(ROUT_LOGIN)
+        navController.navigate(ROUT_LOGIN) {
+            popUpTo(ROUT_SERVICE) { inclusive = true }
+        }
     }
 
     fun isLoggedIn(): Boolean = mAuth.currentUser != null

@@ -3,6 +3,7 @@ package com.james.haelia.ui.theme.screens.login
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,17 +22,48 @@ import com.james.haelia.data.AuthViewModel
 import com.james.haelia.ui.theme.navigation.ROUT_SERVICE
 import com.james.haelia.ui.theme.navigation.ROUT_SIGNUP
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
+import android.util.Patterns
 
 @Composable
 fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
     val authViewModel = remember { AuthViewModel(navController, context) }
 
-    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
-    val isLoginEnabled = username.isNotBlank() && password.length >= 6
+    fun validateEmail(email: String): Boolean {
+        return if (email.isBlank()) {
+            emailError = "Email cannot be empty"
+            false
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailError = "Please enter a valid email address"
+            false
+        } else {
+            emailError = null
+            true
+        }
+    }
+
+    fun validatePassword(password: String): Boolean {
+        return if (password.isBlank()) {
+            passwordError = "Password cannot be empty"
+            false
+        } else if (password.length < 6) {
+            passwordError = "Password must be at least 6 characters"
+            false
+        } else {
+            passwordError = null
+            true
+        }
+    }
+
+    val isLoginEnabled = email.isNotBlank() && password.isNotBlank() && emailError == null && passwordError == null
 
     Box(
         modifier = Modifier
@@ -54,7 +86,7 @@ fun LoginScreen(navController: NavController) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "LOG IN ",
+                    text = "LOG IN",
                     style = MaterialTheme.typography.headlineLarge,
                     color = Color(0xFF212121)
                 )
@@ -62,43 +94,64 @@ fun LoginScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 OutlinedTextField(
-                    value = username,
-                    onValueChange = { username = it },
-                    label = { Text("Username") },
-                    leadingIcon = { Icon(imageVector = Icons.Filled.Person, contentDescription = null) },
+                    value = email,
+                    onValueChange = { 
+                        email = it
+                        validateEmail(it)
+                    },
+                    label = { Text("Email") },
+                    leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
-                    //colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = Color(0xFF2196F3))
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next
+                    ),
+                    singleLine = true,
+                    isError = emailError != null,
+                    supportingText = {
+                        if (emailError != null) {
+                            Text(
+                                text = emailError!!,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = password,
-                    onValueChange = { password = it },
+                    onValueChange = { 
+                        password = it
+                        validatePassword(it)
+                    },
                     label = { Text("Password") },
                     visualTransformation = PasswordVisualTransformation(),
                     leadingIcon = { Icon(imageVector = Icons.Filled.Lock, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
-                    isError = password.isNotEmpty() && password.length < 6,
-                    //colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = Color(0xFF2196F3))
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done
+                    ),
+                    singleLine = true,
+                    isError = passwordError != null,
+                    supportingText = {
+                        if (passwordError != null) {
+                            Text(
+                                text = passwordError!!,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
                 )
-
-                if (password.isNotEmpty() && password.length < 6) {
-                    Text(
-                        text = "Password must be at least 6 characters.",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.align(Alignment.Start).padding(top = 4.dp)
-                    )
-                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
                     onClick = {
-                        authViewModel.login(username, password)
-                        if (isLoginEnabled) {
-                            navController.navigate(ROUT_SERVICE)
+                        if (validateEmail(email) && validatePassword(password)) {
+                            authViewModel.login(email, password)
                         }
                     },
                     enabled = isLoginEnabled,
